@@ -23,6 +23,12 @@ class Reservation
     #[ORM\Column]
     private ?int $totalDays = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    private ?Room $isAbout = null;
+
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    private ?User $reservedBy = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +66,30 @@ class Reservation
     public function setTotalDays(int $totalDays): static
     {
         $this->totalDays = $totalDays;
+
+        return $this;
+    }
+
+    public function getIsAbout(): ?Room
+    {
+        return $this->isAbout;
+    }
+
+    public function setIsAbout(?Room $isAbout): static
+    {
+        $this->isAbout = $isAbout;
+
+        return $this;
+    }
+
+    public function getReservedBy(): ?User
+    {
+        return $this->reservedBy;
+    }
+
+    public function setReservedBy(?User $reservedBy): static
+    {
+        $this->reservedBy = $reservedBy;
 
         return $this;
     }

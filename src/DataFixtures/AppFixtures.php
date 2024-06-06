@@ -6,6 +6,7 @@ use Faker\Factory;
 use App\Entity\Room;
 use App\Entity\User;
 use App\Entity\Hotel;
+use DateTimeImmutable;
 use App\Entity\Reservation;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -88,15 +89,27 @@ class AppFixtures extends Fixture
         for ($i = 1; $i <= 100; $i++) {
             $reservation = new Reservation();
 
-            // Génération de dates aléatoires
-            $randomCheckIn = $faker->dateTimeBetween('-6 months', '-5 months');
-            $randomCheckOut = $faker->dateTimeBetween('-5 months', '-4 months');
+            // Génération de la date de checkIn (entre maintenant et dans 6 mois)
+            $randomCheckIn = $faker->dateTimeBetween('now', '+6 months');
 
-            // Calcul du nombre de jours entre les deux dates -1 jour car on ne compte pas le jour de départ
-            $totalDays = ($randomCheckIn->diff($randomCheckOut)->days) - 1;
+            // Génération de la date de checkOut (entre le checkIn et jusqu'à 2 mois après)
+            $randomCheckOut = $faker->dateTimeBetween($randomCheckIn, (clone $randomCheckIn)->modify('+2 months'));
 
-            $reservation->setCheckIn($faker->dateTimeBetween($randomCheckIn))
-                ->setCheckOut($faker->dateTimeBetween($randomCheckOut))
+            // On formate les dates pour ne garder que la date sans l'heure (format YYYY-MM-DD)
+            $randomCheckInFormated = new DateTimeImmutable($randomCheckIn->format('Y-m-d'));
+            $randomCheckOutFormated = new DateTimeImmutable($randomCheckOut->format('Y-m-d'));
+
+            // Calcul du nombre de jours entre les deux dates (checkIn et checkOut)
+            $totalDays = $randomCheckInFormated->diff($randomCheckOutFormated)->days;
+
+            // Si la durée du séjour est supérieure à un jour,
+            // on soustrait un jour pour ne pas compter le jour de départ
+            if ($totalDays > 1) {
+                $totalDays--;
+            }
+
+            $reservation->setCheckIn($randomCheckInFormated)
+                ->setCheckOut($randomCheckOutFormated)
                 ->setTotalDays($totalDays)
                 ->setIsAbout($this->getReference('room_' . $faker->numberBetween(1, 50)))
                 ->setReservedBy($this->getReference('user_' . $faker->numberBetween(1, 10)));

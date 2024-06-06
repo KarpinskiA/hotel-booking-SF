@@ -87,9 +87,14 @@ class AppFixtures extends Fixture
         // création de 100 réservations
         for ($i = 1; $i <= 100; $i++) {
             $reservation = new Reservation();
+
+            // Génération de dates aléatoires
             $randomCheckIn = $faker->dateTimeBetween('-6 months', '-5 months');
             $randomCheckOut = $faker->dateTimeBetween('-5 months', '-4 months');
-            $totalDays = $randomCheckIn->diff($randomCheckOut)->days;
+
+            // Calcul du nombre de jours entre les deux dates -1 jour car on ne compte pas le jour de départ
+            $totalDays = ($randomCheckIn->diff($randomCheckOut)->days) - 1;
+
             $reservation->setCheckIn($faker->dateTimeBetween($randomCheckIn))
                 ->setCheckOut($faker->dateTimeBetween($randomCheckOut))
                 ->setTotalDays($totalDays)
